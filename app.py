@@ -17,8 +17,10 @@ import streamlit as st
 
 warnings.filterwarnings("ignore")
 
-# ── Path setup ────────────────────────────────────────────────────────────────
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+# ── Path setup (Robust absolute paths for deployment) ─────────────────────────
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(BASE_DIR, "src"))
+
 from preprocessing import get_clean_data
 import eda
 import modeling
@@ -205,7 +207,7 @@ MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun",
 
 
 # ── Data loading (cached) ─────────────────────────────────────────────────────
-DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "netflix_titles.csv")
+DATA_PATH = os.path.join(BASE_DIR, "data", "netflix_titles.csv")
 
 @st.cache_data(show_spinner=False)
 def load_dataset():
@@ -1009,10 +1011,5 @@ with tab8:
 # ── Footer ─────────────────────────────────────────────────────────────────────
 st.markdown("---")
 st.markdown("""
-<div style='text-align:center;color:#333;font-size:0.8rem;padding:12px 0 4px 0;'>
-    🎬 <strong style='color:#555'>StreamScope v2</strong> · Netflix Content Strategy Analyzer &nbsp;·&nbsp;
-    Streamlit · Plotly · scikit-learn · TF-IDF · PCA &nbsp;·&nbsp;
-    <a href='https://www.kaggle.com/datasets/ranaghulamnabi/netflix-movies-and-tv-shows-dataset'
-    style='color:#e50914;'>Kaggle Netflix Dataset</a>
-</div>
+
 """, unsafe_allow_html=True)
