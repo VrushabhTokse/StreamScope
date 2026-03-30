@@ -84,9 +84,10 @@ def director_leaderboard(df: pd.DataFrame, top_n: int = 20) -> pd.DataFrame:
 
 
 def actor_leaderboard(df: pd.DataFrame, top_n: int = 20) -> pd.DataFrame:
-    """Top N actors by number of titles (excluding Unknown)."""
-    exploded = df[df["cast"] != "Unknown"]["cast"].str.split(",").explode().str.strip()
-    counts = exploded.value_counts().head(top_n).reset_index()
+    """Top N actors by number of titles (excluding Unknown and Not Available)."""
+    exclude = ["Unknown", "Not Available", "None", ""]
+    exploded = df[~df["cast"].isin(exclude)]["cast"].str.split(",").explode().str.strip()
+    counts = exploded[~exploded.isin(exclude)].value_counts().head(top_n).reset_index()
     counts.columns = ["actor", "count"]
     return counts
 
