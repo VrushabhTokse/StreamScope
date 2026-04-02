@@ -214,7 +214,7 @@ def load_dataset():
     return get_clean_data(DATA_PATH)
 
 @st.cache_data(show_spinner=False)
-def run_ml_models(_df):
+def run_ml_pipeline_v2(_df):
     clustered, inertia, pca_exp = modeling.run_clustering(_df, n_clusters=3)
     acc, cm, report, imp_df, class_names, cv_scores, auc, clf, encoders = modeling.run_classification(_df)
     elbow = modeling.elbow_inertias(_df, k_range=range(2, 11))
@@ -777,7 +777,7 @@ with tab6:
     with st.spinner("🤖 Training models (cached after first run)…"):
         ml_data = None
         try:
-            ml_data = run_ml_models(df_full)
+            ml_data = run_ml_pipeline_v2(df_full)
             (clustered, inertia, pca_exp,
              acc, cm, report, imp_df,
              class_names, cv_scores, auc,
