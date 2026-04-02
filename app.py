@@ -216,10 +216,10 @@ def load_dataset():
 @st.cache_data(show_spinner=False)
 def run_ml_models(_df):
     clustered, inertia, pca_exp = modeling.run_clustering(_df, n_clusters=3)
-    acc, cm, report, imp_df, class_names, cv_scores, auc = modeling.run_classification(_df)
+    acc, cm, report, imp_df, class_names, cv_scores, auc, clf, encoders = modeling.run_classification(_df)
     elbow = modeling.elbow_inertias(_df, k_range=range(2, 11))
     comparison = modeling.run_model_comparison(_df)
-    return clustered, inertia, pca_exp, acc, cm, report, imp_df, class_names, cv_scores, auc, elbow, comparison
+    return clustered, inertia, pca_exp, acc, cm, report, imp_df, class_names, cv_scores, auc, elbow, comparison, clf, encoders
 
 @st.cache_data(show_spinner=False)
 def build_recs(_df):
@@ -781,7 +781,7 @@ with tab6:
             (clustered, inertia, pca_exp,
              acc, cm, report, imp_df,
              class_names, cv_scores, auc,
-             elbow, comparison) = ml_data
+             elbow, comparison, clf, encoders) = ml_data
         except Exception as e:
             st.error(f"⚠️ ML Training Error: {e}")
             st.info("The Machine Learning tab is currently unavailable due to this error, but other tabs are still functional.")
@@ -792,60 +792,59 @@ with tab6:
         # ── Clustering section ───────────────────────────────────────────────────
         st.markdown('<div class="section-header">🔵 KMeans Clustering (PCA 2D Projection)</div>', unsafe_allow_html=True)
 
-        c1, c2 = st.columns([3, 1])
+        c1, c2 = st.columns([2, 1])
         with c1:
             fig_pca = px.scatter(clustered, x="pca_x", y="pca_y",
-            color="cluster",
-            hover_data=["title", "primary_genre", "type", "rating", "release_year"],
-            title=f"KMeans Clusters — PCA 2D (Explained Variance: {pca_exp[0]*100:.1f}% + {pca_exp[1]*100:.1f}%)",
-            template="plotly_dark",
-            color_discrete_sequence=NC,
-            labels={"pca_x":f"PC1 ({pca_exp[0]*100:.1f}%)",
-                    "pca_y":f"PC2 ({pca_exp[1]*100:.1f}%)"},
-            opacity=0.7)
-        fig_pca.update_layout(**PL, height=460)
-        fig_pca.update_traces(marker=dict(size=5))
-        st.plotly_chart(fig_pca, use_container_width=True)
+                color="cluster",
+                hover_data=["title", "primary_genre", "type", "rating", "release_year"],
+                title=f"KMeans Clusters — PCA 2D Representation",
+                template="plotly_dark",
+                color_discrete_sequence=NC,
+                labels={"pca_x":"PC1","pca_y":"PC2"},
+                opacity=0.7)
+            fig_pca.update_layout(**PL, height=480)
+            fig_pca.update_traces(marker=dict(size=6))
+            st.plotly_chart(fig_pca, use_container_width=True)
 
-    with c2:
-        cluster_summary = (
-            clustered.groupby("cluster")
-            .agg(
-                Titles=("title","count"),
-                Avg_Year=("release_year", lambda x: int(x.mean())),
-                Top_Genre=("primary_genre", lambda x: x.mode().iloc[0] if not x.empty else "—"),
-                Type=("type", lambda x: x.mode().iloc[0] if not x.empty else "—"),
+        with c2:
+            st.markdown("##### 📁 Cluster Summary")
+            cluster_summary = (
+                clustered.groupby("cluster")
+                .agg(
+                    Titles=("title","count"),
+                    Top_Genre=("primary_genre", lambda x: x.mode().iloc[0] if not x.empty else "—"),
+                )
+                .reset_index().rename(columns={"cluster":"#"})
             )
-            .reset_index()
-            .rename(columns={"cluster":"Cluster"})
-        )
-        st.markdown("**Cluster Summary**")
-        st.dataframe(cluster_summary, use_container_width=True, hide_index=True)
+            st.dataframe(cluster_summary, use_container_width=True, hide_index=True)
 
-        # Elbow curve
-        st.markdown('<div class="section-header">📈 Elbow Curve — Optimal K</div>', unsafe_allow_html=True)
-        elbow_df = pd.DataFrame(list(elbow.items()), columns=["k", "inertia"])
-        fig_elbow = px.line(elbow_df, x="k", y="inertia",
-            markers=True, template="plotly_dark",
-            title="KMeans Elbow Curve — Inertia vs Number of Clusters",
-            labels={"k":"Number of Clusters (K)","inertia":"Inertia"},
-            color_discrete_sequence=["#e50914"])
-        fig_elbow.update_layout(**PL)
-        fig_elbow.update_traces(line_width=2.5, marker=dict(size=9, color="#e50914"))
-        st.plotly_chart(fig_elbow, use_container_width=True)
+            st.markdown("---")
+            
+            # 🔮 Live AI Predictor (The "Classification Model Implementation")
+            st.markdown("##### 🔮 Live AI Content Predictor")
+            st.write("Predict content type based on features:")
+            
+            p_gen = st.selectbox("Genre", sorted(df_full["primary_genre"].unique()))
+            p_rat = st.selectbox("Rating", sorted(df_full["rating"].unique()), index=5)
+            p_yr  = st.slider("Year", int(df_full["release_year"].min()), int(df_full["release_year"].max()), 2021)
+            p_len = st.radio("Length", ["Short", "Medium", "Long"], index=1, horizontal=True)
 
-        # ── Classification section ───────────────────────────────────────────────
-        st.markdown('<div class="section-header">🤖 RandomForest — Movie vs. TV Show Classifier</div>', unsafe_allow_html=True)
-
-        m1, m2, m3, m4 = st.columns(4)
-        with m1:
-            st.metric("🎯 Test Accuracy", f"{acc*100:.1f}%")
-        with m2:
-            st.metric("📊 CV Mean (5-Fold)", f"{cv_scores.mean()*100:.1f}%")
-        with m3:
-            st.metric("📉 CV Std Dev", f"±{cv_scores.std()*100:.1f}%")
-        with m4:
-            st.metric("🔵 ROC AUC", f"{auc:.3f}" if auc else "N/A")
+            if st.button("🚀 Run AI Prediction", use_container_width=True):
+                user_f = {"primary_genre":p_gen, "rating":p_rat, "release_year":p_yr, "content_length_category":p_len}
+                res = modeling.get_prediction(clf, encoders, class_names, user_f)
+                
+                clr = "#e50914" if res == "Movie" else "#4bcffa"
+                st.markdown(f"""
+                <div style="background:{clr}22; border:1px solid {clr}; border-radius:10px; padding:15px; text-align:center;">
+                    <span style="color:#aaa; font-size:0.8rem; text-transform:uppercase;">AI Prediction</span><br>
+                    <span style="color:{clr}; font-size:2.2rem; font-weight:900;">{res}</span>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown("---")
+            st.markdown("##### 🎯 Model Performance")
+            st.metric("Test Accuracy", f"{acc*100:.1f}%")
+            st.metric("ROC AUC Score", f"{auc:.3f}" if auc else "N/A")
 
         c3, c4 = st.columns(2)
         with c3:

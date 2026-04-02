@@ -20,16 +20,23 @@ FEATURE_COLS = ["primary_genre", "rating", "content_length_category", "release_y
 TARGET_COL = "type"
 
 
-def encode_features(df: pd.DataFrame, feature_cols: list) -> pd.DataFrame:
-    """Encode non-numeric categorical features into numerical labels."""
+def encode_with_encoders(df: pd.DataFrame, feature_cols: list):
+    """Encode categorical features and return the encoded DF and the encoders."""
     encoded = df[feature_cols].copy()
+    encoders = {}
     for col in feature_cols:
         # Check if the column is NOT a numeric type (float/int)
         if not pd.api.types.is_numeric_dtype(encoded[col]):
             le = LabelEncoder()
             # Convert to string to handle any mix of types before encoding
             encoded[col] = le.fit_transform(encoded[col].astype(str))
-    encoded = encoded.dropna()
+            encoders[col] = le
+    return encoded.dropna(), encoders
+
+
+def encode_features(df: pd.DataFrame, feature_cols: list) -> pd.DataFrame:
+    """[DEPRECATED] Use encode_with_encoders. Simple helper for clustering."""
+    encoded, _ = encode_with_encoders(df, feature_cols)
     return encoded
 
 
@@ -73,7 +80,7 @@ def elbow_inertias(df: pd.DataFrame, k_range=range(2, 11)) -> dict:
 # ── Classification ────────────────────────────────────────────────────────────
 def run_classification(df: pd.DataFrame):
     """RandomForest + cross-validation for Movie vs. TV Show classification."""
-    encoded = encode_features(df, FEATURE_COLS)
+    encoded, encoders = encode_with_encoders(df, FEATURE_COLS)
     target_df = df.loc[encoded.index, TARGET_COL].copy()
     le_target = LabelEncoder()
     y = le_target.fit_transform(target_df.astype(str))
@@ -115,7 +122,32 @@ def run_classification(df: pd.DataFrame):
     except Exception:
         auc = None
 
-    return acc, cm, report, importance_df, class_names, cv_scores, auc
+    return acc, cm, report, importance_df, class_names, cv_scores, auc, clf, encoders
+
+
+def get_prediction(model, encoders, class_names, raw_features: dict) -> str:
+    """Predict label for a dictionary of raw string/int features."""
+    numerical_features = []
+    for col in FEATURE_COLS:
+        val = raw_features[col]
+        if col in encoders:
+            try:
+                # Need to wrap in 2D array for transform
+                transformed = encoders[col].transform([str(val)])[0]
+                numerical_features.append(transformed)
+            except Exception:
+                numerical_features.append(0)
+        else:
+            try:
+                numerical_features.append(float(val))
+            except Exception:
+                numerical_features.append(0)
+            
+    # Note: If the training data was SCALED, we should scale this 1D array too.
+    # However, for simplicity (and since Random Forest is scale-invariant), 
+    # we can skip scaling if only using RF.
+    pred_idx = model.predict([numerical_features])[0]
+    return class_names[pred_idx]
 
 
 # ── Gradient Boosting comparison ──────────────────────────────────────────────
