@@ -21,10 +21,13 @@ TARGET_COL = "type"
 
 
 def encode_features(df: pd.DataFrame, feature_cols: list) -> pd.DataFrame:
+    """Encode non-numeric categorical features into numerical labels."""
     encoded = df[feature_cols].copy()
     for col in feature_cols:
-        if encoded[col].dtype == object:
+        # Check if the column is NOT a numeric type (float/int)
+        if not pd.api.types.is_numeric_dtype(encoded[col]):
             le = LabelEncoder()
+            # Convert to string to handle any mix of types before encoding
             encoded[col] = le.fit_transform(encoded[col].astype(str))
     encoded = encoded.dropna()
     return encoded
