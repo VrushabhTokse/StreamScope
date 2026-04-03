@@ -1,40 +1,28 @@
-"""
-StreamScope — Advanced Netflix Content Strategy Analyzer v2
-8-Tab Interactive Streamlit Dashboard
-Run: streamlit run app.py
-"""
-
 import os
 import sys
 import importlib
 import base64
+import warnings
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-import warnings
+
+# ── Path setup (Robust absolute paths for deployment) ─────────────────────────
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+if os.path.join(BASE_DIR, "src") not in sys.path:
+    sys.path.insert(0, os.path.join(BASE_DIR, "src"))
 
 # Local modules
-from src.data_loader import get_clean_data
-import src.modeling as modeling
+from preprocessing import get_clean_data
+import eda
+import modeling
 
 # Force reload of modeling module to pick up changes in submodules
 importlib.reload(modeling)
 
 warnings.filterwarnings("ignore")
-
-# ── Path setup (Robust absolute paths for deployment) ─────────────────────────
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(BASE_DIR, "src"))
-
-from preprocessing import get_clean_data
-import eda
-import modeling
-import importlib
-
-# Force reload of modeling to ensure latest return signatures are used
-importlib.reload(modeling)
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
