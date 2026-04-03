@@ -861,6 +861,20 @@ with tab6:
         fig_imp.update_coloraxes(showscale=False)
         st.plotly_chart(fig_imp, use_container_width=True)
 
+        # ⚖️ Model Comparison Section
+        st.markdown('<div class="section-header">⚖️ Model Accuracy Comparison — Proof of Performance</div>', unsafe_allow_html=True)
+        fig_comp = px.bar(comparison, x="Model", y="Mean Accuracy",
+            error_y="Std", color="Model",
+            color_discrete_sequence=["#e50914", "#4bcffa", "#ffd32a"],
+            template="plotly_dark",
+            title="5-Fold Cross-Validation Accuracy Comparison",
+            labels={"Mean Accuracy":"Accuracy","Model":""},
+            text=comparison["Mean Accuracy"].apply(lambda x: f"{x*100:.1f}%"))
+        fig_comp.update_layout(**PL, showlegend=True, height=450)
+        fig_comp.update_traces(textposition="outside")
+        fig_comp.update_yaxes(range=[0, 1.1])
+        st.plotly_chart(fig_comp, use_container_width=True)
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 7 — Recommendation Engine

@@ -8,11 +8,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.metrics import (
-    classification_report, confusion_matrix, accuracy_score, roc_auc_score
-)
+from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -170,6 +166,7 @@ def run_model_comparison(df: pd.DataFrame) -> pd.DataFrame:
     models = {
         "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
         "Gradient Boosting": GradientBoostingClassifier(n_estimators=100, random_state=42),
+        "Logistic Regression": LogisticRegression(max_iter=1000, random_state=42),
     }
 
     results = []
