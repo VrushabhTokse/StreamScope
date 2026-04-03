@@ -125,29 +125,35 @@ def run_classification(df: pd.DataFrame):
     return acc, cm, report, importance_df, class_names, cv_scores, auc, clf, encoders
 
 
-def get_prediction(model, encoders, class_names, raw_features: dict) -> str:
-    """Predict label for a dictionary of raw string/int features."""
+def get_prediction(model, encoders, class_names, raw_features: dict) -> tuple:
+    """Predict label, confidence, and feature-level probabilities."""
     numerical_features = []
     for col in FEATURE_COLS:
         val = raw_features[col]
         if col in encoders:
             try:
-                # Need to wrap in 2D array for transform
+                # Wrap in 2D array for transform
                 transformed = encoders[col].transform([str(val)])[0]
                 numerical_features.append(transformed)
-            except Exception:
+            except:
                 numerical_features.append(0)
         else:
             try:
                 numerical_features.append(float(val))
-            except Exception:
+            except:
                 numerical_features.append(0)
             
-    # Note: If the training data was SCALED, we should scale this 1D array too.
-    # However, for simplicity (and since Random Forest is scale-invariant), 
-    # we can skip scaling if only using RF.
+    # Get prediction and probabilities
     pred_idx = model.predict([numerical_features])[0]
-    return class_names[pred_idx]
+    probs = model.predict_proba([numerical_features])[0]
+    
+    label = class_names[pred_idx]
+    confidence = float(np.max(probs))
+    
+    # Create dictionary of class -> probability
+    prob_dict = {name: float(p) for name, p in zip(class_names, probs)}
+    
+    return label, confidence, prob_dict
 
 
 # ── Gradient Boosting comparison ──────────────────────────────────────────────

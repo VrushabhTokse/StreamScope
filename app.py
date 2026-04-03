@@ -830,15 +830,21 @@ with tab6:
 
             if st.button("🚀 Run AI Prediction", use_container_width=True):
                 user_f = {"primary_genre":p_gen, "rating":p_rat, "release_year":p_yr, "content_length_category":p_len}
-                res = modeling.get_prediction(clf, encoders, class_names, user_f)
+                res, conf, prob_dict = modeling.get_prediction(clf, encoders, class_names, user_f)
                 
                 clr = "#e50914" if res == "Movie" else "#4bcffa"
                 st.markdown(f"""
-                <div style="background:{clr}22; border:1px solid {clr}; border-radius:10px; padding:15px; text-align:center;">
+                <div style="background:{clr}22; border:1px solid {clr}; border-radius:10px; padding:15px; text-align:center; margin-bottom:15px;">
                     <span style="color:#aaa; font-size:0.8rem; text-transform:uppercase;">AI Prediction</span><br>
-                    <span style="color:{clr}; font-size:2.2rem; font-weight:900;">{res}</span>
+                    <span style="color:{clr}; font-size:2.2rem; font-weight:900;">{res}</span><br>
+                    <span style="color:{clr}aa; font-size:0.9rem;">{conf*100:.1f}% Confidence</span>
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # Show mini probability bar
+                for cname, pval in prob_dict.items():
+                    st.caption(f"{cname}: {pval*100:.1f}%")
+                    st.progress(pval)
             
             st.markdown("---")
             st.markdown("##### 🎯 Model Performance")
