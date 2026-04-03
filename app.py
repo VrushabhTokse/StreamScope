@@ -818,29 +818,6 @@ with tab6:
             st.dataframe(cluster_summary, use_container_width=True, hide_index=True)
 
             st.markdown("---")
-            
-            # 🔮 Live AI Predictor (The "Classification Model Implementation")
-            st.markdown("##### 🔮 Live AI Content Predictor")
-            st.write("Predict content type based on features:")
-            
-            p_gen = st.selectbox("Genre", sorted(df_full["primary_genre"].unique()))
-            p_rat = st.selectbox("Rating", sorted(df_full["rating"].unique()), index=5)
-            p_yr  = st.slider("Year", int(df_full["release_year"].min()), int(df_full["release_year"].max()), 2021)
-            p_len = st.radio("Length", ["Short", "Medium", "Long"], index=1, horizontal=True)
-
-            if st.button("🚀 Run AI Prediction", use_container_width=True):
-                user_f = {"primary_genre":p_gen, "rating":p_rat, "release_year":p_yr, "content_length_category":p_len}
-                res = modeling.get_prediction(clf, encoders, class_names, user_f)
-                
-                clr = "#e50914" if res == "Movie" else "#4bcffa"
-                st.markdown(f"""
-                <div style="background:{clr}22; border:1px solid {clr}; border-radius:10px; padding:15px; text-align:center;">
-                    <span style="color:#aaa; font-size:0.8rem; text-transform:uppercase;">AI Prediction</span><br>
-                    <span style="color:{clr}; font-size:2.2rem; font-weight:900;">{res}</span>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown("---")
             st.markdown("##### 🎯 Model Performance")
             st.metric("Test Accuracy", f"{acc*100:.1f}%")
             st.metric("ROC AUC Score", f"{auc:.3f}" if auc else "N/A")
