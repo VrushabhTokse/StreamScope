@@ -6,14 +6,21 @@ Run: streamlit run app.py
 
 import os
 import sys
-import warnings
-import re
-import numpy as np
+import importlib
+import base64
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import streamlit as st
+import warnings
+
+# Local modules
+from src.data_loader import get_clean_data
+import src.modeling as modeling
+
+# Force reload of modeling module to pick up changes in submodules
+importlib.reload(modeling)
 
 warnings.filterwarnings("ignore")
 
@@ -24,6 +31,10 @@ sys.path.insert(0, os.path.join(BASE_DIR, "src"))
 from preprocessing import get_clean_data
 import eda
 import modeling
+import importlib
+
+# Force reload of modeling to ensure latest return signatures are used
+importlib.reload(modeling)
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -214,7 +225,7 @@ def load_dataset():
     return get_clean_data(DATA_PATH)
 
 @st.cache_data(show_spinner=False)
-def run_ml_pipeline_v2(_df):
+def run_ml_final_v3(_df):
     clustered, inertia, pca_exp = modeling.run_clustering(_df, n_clusters=3)
     acc, cm, report, imp_df, class_names, cv_scores, auc, clf, encoders = modeling.run_classification(_df)
     elbow = modeling.elbow_inertias(_df, k_range=range(2, 11))
@@ -777,7 +788,7 @@ with tab6:
     with st.spinner("🤖 Training models (cached after first run)…"):
         ml_data = None
         try:
-            ml_data = run_ml_pipeline_v2(df_full)
+            ml_data = run_ml_final_v3(df_full)
             (clustered, inertia, pca_exp,
              acc, cm, report, imp_df,
              class_names, cv_scores, auc,
