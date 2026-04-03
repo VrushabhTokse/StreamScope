@@ -818,60 +818,42 @@ with tab6:
             st.dataframe(cluster_summary, use_container_width=True, hide_index=True)
 
             st.markdown("---")
+            
+            # 🔮 Live AI Predictor (Simplified implementation)
+            st.markdown("##### 🔮 Live AI Content Predictor")
+            st.write("Predict content type based on features:")
+            
+            p_gen = st.selectbox("Genre", sorted(df_full["primary_genre"].unique()))
+            p_rat = st.selectbox("Rating", sorted(df_full["rating"].unique()), index=5)
+            p_yr  = st.slider("Year", int(df_full["release_year"].min()), int(df_full["release_year"].max()), 2021)
+            p_len = st.radio("Length", ["Short", "Medium", "Long"], index=1, horizontal=True)
+
+            if st.button("🚀 Run AI Prediction", use_container_width=True):
+                user_f = {"primary_genre":p_gen, "rating":p_rat, "release_year":p_yr, "content_length_category":p_len}
+                res = modeling.get_prediction(clf, encoders, class_names, user_f)
+                
+                clr = "#e50914" if res == "Movie" else "#4bcffa"
+                st.markdown(f"""
+                <div style="background:{clr}22; border:1px solid {clr}; border-radius:10px; padding:15px; text-align:center;">
+                    <span style="color:#aaa; font-size:0.8rem; text-transform:uppercase;">AI Prediction</span><br>
+                    <span style="color:{clr}; font-size:2.2rem; font-weight:900;">{res}</span>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown("---")
             st.markdown("##### 🎯 Model Performance")
             st.metric("Test Accuracy", f"{acc*100:.1f}%")
             st.metric("ROC AUC Score", f"{auc:.3f}" if auc else "N/A")
 
-        c3, c4 = st.columns(2)
-        with c3:
-            cm_df = pd.DataFrame(cm, index=class_names, columns=class_names)
-            fig_cm = px.imshow(cm_df, text_auto=True,
-                color_continuous_scale="Reds", template="plotly_dark",
-                title="Confusion Matrix")
-            fig_cm.update_layout(**PL, height=340)
-            st.plotly_chart(fig_cm, use_container_width=True)
-
-        with c4:
-            fig_imp = px.bar(imp_df, x="importance", y="feature", orientation="h",
-                color="importance", color_continuous_scale="Reds",
-                template="plotly_dark", title="Feature Importance",
-                labels={"feature":"","importance":"Score"})
-            fig_imp.update_layout(**PL, height=340, yaxis=dict(autorange="reversed"))
-            fig_imp.update_coloraxes(showscale=False)
-            st.plotly_chart(fig_imp, use_container_width=True)
-
-        # CV scores bar
-        cv_df = pd.DataFrame({"Fold":[f"Fold {i+1}" for i in range(len(cv_scores))],
-                               "Accuracy": cv_scores*100})
-        fig_cv = px.bar(cv_df, x="Fold", y="Accuracy",
-            color="Accuracy", color_continuous_scale="Reds",
-            template="plotly_dark",
-            title="5-Fold Cross-Validation Accuracy Scores",
-            labels={"Accuracy":"Accuracy (%)","Fold":""})
-        fig_cv.update_layout(**PL)
-        fig_cv.update_coloraxes(showscale=False)
-        fig_cv.add_hline(y=cv_scores.mean()*100, line_dash="dash",
-            line_color="#ffd32a", annotation_text=f"Mean: {cv_scores.mean()*100:.1f}%")
-        st.plotly_chart(fig_cv, use_container_width=True)
-
-        # Model comparison
-        st.markdown('<div class="section-header">⚖️ Model Comparison — RandomForest vs Gradient Boosting</div>', unsafe_allow_html=True)
-        fig_comp = px.bar(comparison, x="Model", y="Mean Accuracy",
-            error_y="Std", color="Model",
-            color_discrete_sequence=["#e50914","#4bcffa"],
-            template="plotly_dark",
-            title="5-Fold CV Accuracy Comparison",
-            labels={"Mean Accuracy":"Accuracy","Model":""},
-            text=comparison["Mean Accuracy"].apply(lambda x: f"{x*100:.1f}%"))
-        fig_comp.update_layout(**PL, showlegend=False)
-        fig_comp.update_traces(textposition="outside")
-        fig_comp.update_yaxes(range=[0, 1.1])
-        st.plotly_chart(fig_comp, use_container_width=True)
-
-        # Classification report
-        st.markdown("**Detailed Classification Report**")
-        report_df = pd.DataFrame(report).T.round(3)
-        st.dataframe(report_df, use_container_width=True)
+        # Row 2: Basic Insights
+        st.markdown('<div class="section-header">🤖 Insights & Analysis — What drives the predictions?</div>', unsafe_allow_html=True)
+        fig_imp = px.bar(imp_df, x="importance", y="feature", orientation="h",
+            color="importance", color_continuous_scale="Reds",
+            template="plotly_dark", title="Global Feature Importance",
+            labels={"feature":"","importance":"Score"})
+        fig_imp.update_layout(**PL, height=340, yaxis=dict(autorange="reversed"))
+        fig_imp.update_coloraxes(showscale=False)
+        st.plotly_chart(fig_imp, use_container_width=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
