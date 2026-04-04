@@ -363,12 +363,11 @@ st.markdown("<br>", unsafe_allow_html=True)
 # TABS
 # ══════════════════════════════════════════════════════════════════════════════
 (tab1, tab2, tab3, tab4,
- tab5, tab6, tab7, tab8) = st.tabs([
+ tab5, tab6, tab7) = st.tabs([
     "📈 Growth & Trends",
     "🎭 Genre Deep Dive",
     "🌍 Global Reach",
     "🎬 Directors & Cast",
-    "⏱️ Duration Analysis",
     "🤖 ML Models",
     "🔍 Recommendations",
     "📋 Data Explorer",
@@ -690,84 +689,9 @@ with tab4:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 5 — Duration Analysis
+# TAB 5 — ML Models
 # ══════════════════════════════════════════════════════════════════════════════
 with tab5:
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown('<div class="section-header">🎬 Movie Duration Distribution</div>', unsafe_allow_html=True)
-        movie_dur = eda.movie_duration_distribution(df)
-        if not movie_dur.empty:
-            fig_md = px.histogram(movie_dur, x="duration_value", nbins=40,
-                color_discrete_sequence=["#e50914"], template="plotly_dark",
-                title="Distribution of Movie Runtimes (minutes)",
-                labels={"duration_value":"Runtime (min)","count":"Count"})
-            fig_md.update_layout(**PL)
-            fig_md.update_traces(marker_line_color="#111", marker_line_width=1)
-            st.plotly_chart(fig_md, use_container_width=True)
-
-            med = movie_dur["duration_value"].median()
-            mean = movie_dur["duration_value"].mean()
-            st.markdown(f"""<div class="insight-box">
-            📊 <b>Movie Runtime Stats:</b><br>
-            Median: <b>{med:.0f} min</b> &nbsp;|&nbsp; 
-            Mean: <b>{mean:.0f} min</b> &nbsp;|&nbsp; 
-            Shortest: <b>{movie_dur["duration_value"].min():.0f} min</b> &nbsp;|&nbsp;
-            Longest: <b>{movie_dur["duration_value"].max():.0f} min</b>
-            </div>""", unsafe_allow_html=True)
-
-    with c2:
-        st.markdown('<div class="section-header">📺 TV Show Seasons Distribution</div>', unsafe_allow_html=True)
-        tv_seas = eda.tv_seasons_distribution(df)
-        if not tv_seas.empty:
-            fig_tv = px.bar(tv_seas, x="seasons", y="count",
-                color="count", color_continuous_scale="Blues",
-                template="plotly_dark",
-                title="Number of Seasons — TV Show Distribution",
-                labels={"seasons":"Seasons","count":"Shows"})
-            fig_tv.update_layout(**PL)
-            fig_tv.update_coloraxes(showscale=False)
-            st.plotly_chart(fig_tv, use_container_width=True)
-
-    # Duration by genre
-    st.markdown('<div class="section-header">⏱️ Average Movie Runtime by Genre</div>', unsafe_allow_html=True)
-    movie_dur_genre = df[(df["type"] == "Movie") & df["duration_value"].notna()].copy()
-    if not movie_dur_genre.empty:
-        dur_by_genre = (
-            movie_dur_genre.groupby("primary_genre")["duration_value"]
-            .agg(["mean", "count"])
-            .reset_index()
-            .rename(columns={"mean": "avg_duration", "count": "num_titles"})
-            .sort_values("avg_duration", ascending=False)
-            .head(20)
-        )
-        fig_dg2 = px.bar(dur_by_genre, x="avg_duration", y="primary_genre",
-            orientation="h", color="avg_duration",
-            color_continuous_scale="Reds", template="plotly_dark",
-            title="Average Movie Runtime by Primary Genre (Top 20)",
-            labels={"primary_genre":"","avg_duration":"Avg Duration (min)"},
-            hover_data={"num_titles": True})
-        fig_dg2.update_layout(**PL, height=560, yaxis=dict(autorange="reversed"))
-        fig_dg2.update_coloraxes(showscale=False)
-        st.plotly_chart(fig_dg2, use_container_width=True)
-
-    # Content length breakdown
-    st.markdown('<div class="section-header">📏 Content Length Categories</div>', unsafe_allow_html=True)
-    cl = eda.content_length_breakdown(df)
-    cl = cl[cl["content_length_category"] != "Unknown"]
-    fig_cl = px.bar(cl, x="content_length_category", y="count", color="type",
-        barmode="group", template="plotly_dark",
-        color_discrete_sequence=["#e50914","#4bcffa"],
-        title="Short / Medium / Long Content",
-        labels={"content_length_category":"Category","count":"Count","type":"Type"})
-    fig_cl.update_layout(**PL)
-    st.plotly_chart(fig_cl, use_container_width=True)
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 6 — ML Models
-# ══════════════════════════════════════════════════════════════════════════════
-with tab6:
     st.markdown("""<div class="insight-box">
     ⚙️ <b>Note:</b> All ML models train on the <i>full unfiltered dataset</i> 
     for statistical validity. Models are cached after first run (~15–30s).
@@ -877,9 +801,9 @@ with tab6:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 7 — Recommendation Engine
+# TAB 6 — Recommendation Engine
 # ══════════════════════════════════════════════════════════════════════════════
-with tab7:
+with tab6:
     st.markdown("""<div class="insight-box">
     🔍 <b>Content-Based Recommendation Engine</b><br>
     Powered by TF-IDF vectorization on Netflix title descriptions, genres, directors, 
@@ -944,9 +868,9 @@ with tab7:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 8 — Data Explorer
+# TAB 7 — Data Explorer
 # ══════════════════════════════════════════════════════════════════════════════
-with tab8:
+with tab7:
     st.markdown('<div class="section-header">🔎 Data Explorer</div>', unsafe_allow_html=True)
 
     display_cols = ["title", "type", "primary_genre", "listed_in", "primary_country",
