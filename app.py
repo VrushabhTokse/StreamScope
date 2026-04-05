@@ -615,16 +615,6 @@ with tab3:
         fig_cc.update_layout(**PL, xaxis_tickangle=-30)
         st.plotly_chart(fig_cc, use_container_width=True)
 
-    # Content share treemap
-    st.markdown('<div class="section-header">🌐 Content Share Treemap</div>', unsafe_allow_html=True)
-    treemap_data = country_data.head(30).copy()
-    fig_tree = px.treemap(treemap_data, path=["country"], values="count",
-        color="count", color_continuous_scale="Reds",
-        template="plotly_dark",
-        title="Top 30 Countries — Content Share Treemap")
-    fig_tree.update_layout(**PL, height=380)
-    fig_tree.update_traces(textfont=dict(color="white"))
-    st.plotly_chart(fig_tree, use_container_width=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
