@@ -149,6 +149,22 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     color: #e50914 !important;
 }
 
+/* Section dividers for merged tabs */
+.section-divider {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #fff;
+    padding: 12px 0;
+    margin: 40px 0 20px 0;
+    border-bottom: 2px solid #e50914;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, rgba(229,9,20,0.15) 0%, transparent 100%);
+    border-radius: 4px;
+    display: block;
+    text-align: center;
+}
+
 /* Metric */
 [data-testid="stMetric"] {
     background: #1a1a1a;
@@ -362,21 +378,18 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ══════════════════════════════════════════════════════════════════════════════
 # TABS
 # ══════════════════════════════════════════════════════════════════════════════
-(tab1, tab2, tab3, tab4,
- tab5, tab6) = st.tabs([
-    "📈 Growth & Trends",
-    "🎭 Genre Deep Dive",
-    "🌍 Global Reach",
-    "🤖 ML Models",
-    "🔍 Recommendations",
-    "📋 Data Explorer",
+(tab1, tab2, tab3) = st.tabs([
+    "📊 Dashboard Insights",
+    "🤖 AI Intelligence Core",
+    "🔍 Content Discovery Hub",
 ])
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 1 — Growth & Trends
+# TAB 1 — Dashboard Insights (Growth, Genre, Global)
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
+    st.markdown('<div class="section-divider">📈 Netflix Growth & Trends</div>', unsafe_allow_html=True)
     c_a, c_b = st.columns([2, 1])
 
     with c_a:
@@ -464,10 +477,8 @@ with tab1:
     st.plotly_chart(fig_dec, use_container_width=True)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 2 — Genre Deep Dive
-# ══════════════════════════════════════════════════════════════════════════════
-with tab2:
+    st.markdown("---")
+    st.markdown('<div class="section-divider">🎭 Genre & Ratings Depth</div>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         st.markdown('<div class="section-header">Top 15 Genres</div>', unsafe_allow_html=True)
@@ -557,10 +568,8 @@ with tab2:
         pass
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 — Global Reach
-# ══════════════════════════════════════════════════════════════════════════════
-with tab3:
+    st.markdown("---")
+    st.markdown('<div class="section-divider">🌍 Global Footprint</div>', unsafe_allow_html=True)
     st.markdown('<div class="section-header">🗺️ Global Content Distribution</div>', unsafe_allow_html=True)
     country_data = eda.country_content_counts(df)
 
@@ -618,9 +627,9 @@ with tab3:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 4 — ML Models
+# TAB 2 — AI Intelligence Core (Machine Learning)
 # ══════════════════════════════════════════════════════════════════════════════
-with tab4:
+with tab2:
     st.markdown("""<div class="insight-box">
     ⚙️ <b>Note:</b> All ML models train on the <i>full unfiltered dataset</i> 
     for statistical validity. Models are cached after first run (~15–30s).
@@ -730,9 +739,10 @@ with tab4:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 5 — Recommendation Engine
+# TAB 3 — Content Discovery Hub (Smart Search & Recommendations)
 # ══════════════════════════════════════════════════════════════════════════════
-with tab5:
+with tab3:
+    st.markdown('<div class="section-divider">🔍 AI Recommendation Engine</div>', unsafe_allow_html=True)
     st.markdown("""<div class="insight-box">
     🔍 <b>Content-Based Recommendation Engine</b><br>
     Powered by TF-IDF vectorization on Netflix title descriptions, genres, directors, 
@@ -796,10 +806,8 @@ with tab5:
         """, unsafe_allow_html=True)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 6 — Data Explorer
-# ══════════════════════════════════════════════════════════════════════════════
-with tab6:
+    st.markdown("---")
+    st.markdown('<div class="section-divider">📋 Raw Data Explorer</div>', unsafe_allow_html=True)
     st.markdown('<div class="section-header">🔎 Data Explorer</div>', unsafe_allow_html=True)
 
     display_cols = ["title", "type", "primary_genre", "listed_in", "primary_country",
