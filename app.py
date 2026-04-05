@@ -363,11 +363,10 @@ st.markdown("<br>", unsafe_allow_html=True)
 # TABS
 # ══════════════════════════════════════════════════════════════════════════════
 (tab1, tab2, tab3, tab4,
- tab5, tab6, tab7) = st.tabs([
+ tab5, tab6) = st.tabs([
     "📈 Growth & Trends",
     "🎭 Genre Deep Dive",
     "🌍 Global Reach",
-    "🎬 Directors & Cast",
     "🤖 ML Models",
     "🔍 Recommendations",
     "📋 Data Explorer",
@@ -531,27 +530,16 @@ with tab2:
     except Exception:
         pass
 
-    # Audience split + Top genres per year
-    c3, c4 = st.columns(2)
-    with c3:
-        st.markdown('<div class="section-header">👥 Audience Groups</div>', unsafe_allow_html=True)
-        rg = eda.rating_group_distribution(df)
-        fig_rg = px.pie(rg, names="rating_group", values="count", hole=0.5,
-            color_discrete_sequence=NC, template="plotly_dark",
-            title="Family / Teen / Mature / Other")
-        fig_rg.update_layout(**PL)
-        st.plotly_chart(fig_rg, use_container_width=True)
-
-    with c4:
-        st.markdown('<div class="section-header">📊 Top 3 Genres Per Year</div>', unsafe_allow_html=True)
-        tgy = eda.top_genres_per_year(df, top_n=3)
-        if not tgy.empty:
-            fig_tgy = px.bar(tgy, x="year_added", y="count", color="genres_list",
-                barmode="stack", template="plotly_dark",
-                color_discrete_sequence=NC,
-                labels={"year_added":"Year","count":"Count","genres_list":"Genre"})
-            fig_tgy.update_layout(**PL)
-            st.plotly_chart(fig_tgy, use_container_width=True)
+    # Top genres per year
+    st.markdown('<div class="section-header">📊 Top 3 Genres Per Year</div>', unsafe_allow_html=True)
+    tgy = eda.top_genres_per_year(df, top_n=3)
+    if not tgy.empty:
+        fig_tgy = px.bar(tgy, x="year_added", y="count", color="genres_list",
+            barmode="stack", template="plotly_dark",
+            color_discrete_sequence=NC,
+            labels={"year_added":"Year","count":"Count","genres_list":"Genre"})
+        fig_tgy.update_layout(**PL)
+        st.plotly_chart(fig_tgy, use_container_width=True)
 
     # Word frequency
     st.markdown('<div class="section-header">🔤 Most Frequent Words in Descriptions</div>', unsafe_allow_html=True)
@@ -640,58 +628,9 @@ with tab3:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 4 — Directors & Cast
+# TAB 4 — ML Models
 # ══════════════════════════════════════════════════════════════════════════════
 with tab4:
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown('<div class="section-header">🎬 Top 20 Directors</div>', unsafe_allow_html=True)
-        dir_df = eda.director_leaderboard(df, top_n=20)
-        fig_dir = px.bar(dir_df, x="count", y="director", orientation="h",
-            color="count", color_continuous_scale="Reds", template="plotly_dark",
-            title="Most Prolific Directors on Netflix",
-            labels={"director":"","count":"Titles"})
-        fig_dir.update_layout(**PL, height=580, yaxis=dict(autorange="reversed"))
-        fig_dir.update_coloraxes(showscale=False)
-        st.plotly_chart(fig_dir, use_container_width=True)
-
-    with c2:
-        st.markdown('<div class="section-header">⭐ Top 20 Actors / Cast</div>', unsafe_allow_html=True)
-        act_df = eda.actor_leaderboard(df, top_n=20)
-        fig_act = px.bar(act_df, x="count", y="actor", orientation="h",
-            color="count", color_continuous_scale="Blues", template="plotly_dark",
-            title="Most Featured Actors on Netflix",
-            labels={"actor":"","count":"Titles"})
-        fig_act.update_layout(**PL, height=580, yaxis=dict(autorange="reversed"))
-        fig_act.update_coloraxes(showscale=False)
-        st.plotly_chart(fig_act, use_container_width=True)
-
-    # Director search
-    st.markdown('<div class="section-header">🔎 Director Deep Dive</div>', unsafe_allow_html=True)
-    director_search = st.text_input("Search for a director…", placeholder="e.g. Steven Spielberg")
-    if director_search:
-        director_titles = df[df["director"].str.contains(director_search, case=False, na=False)]
-        if not director_titles.empty:
-            st.success(f"Found **{len(director_titles)}** titles for **{director_search}**")
-            cols_to_show = ["title", "type", "primary_genre", "release_year", "rating", "duration", "primary_country"]
-            st.dataframe(director_titles[[c for c in cols_to_show if c in director_titles.columns]]
-                         .reset_index(drop=True), use_container_width=True)
-
-            genre_split = director_titles.explode("genres_list")["genres_list"].value_counts().reset_index()
-            genre_split.columns = ["genre", "count"]
-            fig_dg = px.pie(genre_split, names="genre", values="count",
-                hole=0.5, title=f"Genre Mix — {director_search}",
-                color_discrete_sequence=NC, template="plotly_dark")
-            fig_dg.update_layout(**PL)
-            st.plotly_chart(fig_dg, use_container_width=True)
-        else:
-            st.warning("No titles found. Try a different name.")
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 5 — ML Models
-# ══════════════════════════════════════════════════════════════════════════════
-with tab5:
     st.markdown("""<div class="insight-box">
     ⚙️ <b>Note:</b> All ML models train on the <i>full unfiltered dataset</i> 
     for statistical validity. Models are cached after first run (~15–30s).
@@ -801,9 +740,9 @@ with tab5:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 6 — Recommendation Engine
+# TAB 5 — Recommendation Engine
 # ══════════════════════════════════════════════════════════════════════════════
-with tab6:
+with tab5:
     st.markdown("""<div class="insight-box">
     🔍 <b>Content-Based Recommendation Engine</b><br>
     Powered by TF-IDF vectorization on Netflix title descriptions, genres, directors, 
@@ -868,9 +807,9 @@ with tab6:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TAB 7 — Data Explorer
+# TAB 6 — Data Explorer
 # ══════════════════════════════════════════════════════════════════════════════
-with tab7:
+with tab6:
     st.markdown('<div class="section-header">🔎 Data Explorer</div>', unsafe_allow_html=True)
 
     display_cols = ["title", "type", "primary_genre", "listed_in", "primary_country",
