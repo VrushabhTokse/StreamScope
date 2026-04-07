@@ -423,123 +423,20 @@ with tab1:
                 showlegend=True, legend=dict(orientation="h",y=-0.1), **PL)
             st.plotly_chart(fig_d, use_container_width=True)
 
-    # Monthly heatmap
-    st.markdown('<div class="section-header">📅 Monthly Content Addition Heatmap</div>', unsafe_allow_html=True)
-    try:
-        monthly = eda.monthly_additions_heatmap(df)
-        if not monthly.empty:
-            monthly.index = [MONTH_NAMES[i-1] for i in monthly.index]
-            fig_heat = px.imshow(
-                monthly,
-                color_continuous_scale="Reds",
-                aspect="auto",
-                title="Number of Titles Added Per Month × Year",
-                labels={"x":"Year","y":"Month","color":"Titles"},
-                template="plotly_dark",
-            )
-            fig_heat.update_layout(**PL, height=320)
-            fig_heat.update_coloraxes(colorbar=dict(
-                bgcolor="#1a1a1a", tickfont=dict(color="#ccc")
-            ))
-            st.plotly_chart(fig_heat, use_container_width=True)
-    except Exception:
-        pass
-
-    # Content addition lag
-    st.markdown('<div class="section-header">⏳ Content Addition Lag (Release → Netflix)</div>', unsafe_allow_html=True)
-    lag = eda.content_addition_lag(df)
-    if not lag.empty:
-        fig_lag = px.bar(lag, x="lag_years", y="count",
-            color="count", color_continuous_scale="Reds",
-            template="plotly_dark",
-            title="How Many Years After Release Do Titles Appear on Netflix?",
-            labels={"lag_years":"Years After Release","count":"Number of Titles"})
-        fig_lag.update_layout(**PL)
-        fig_lag.update_coloraxes(showscale=False)
-        st.plotly_chart(fig_lag, use_container_width=True)
-
-        median_lag = lag.loc[lag["count"].idxmax(), "lag_years"]
-        st.markdown(f"""<div class="insight-box">
-        💡 <b>Insight:</b> The most common lag is <b>{median_lag} year(s)</b> between a title's 
-        original release and its appearance on Netflix. A high volume at lag = 0 indicates 
-        Netflix Originals or same-year acquisitions.
-        </div>""", unsafe_allow_html=True)
-
-    # Decade
-    st.markdown('<div class="section-header">🕰️ Release Decade Distribution</div>', unsafe_allow_html=True)
-    dec = eda.decade_distribution(df)
-    fig_dec = px.bar(dec, x="decade", y="count", color="count",
-        color_continuous_scale="Reds", template="plotly_dark",
-        title="Netflix Library by Release Decade",
-        labels={"decade":"Decade","count":"Titles"})
-    fig_dec.update_layout(**PL)
-    fig_dec.update_coloraxes(showscale=False)
-    st.plotly_chart(fig_dec, use_container_width=True)
 
 
     st.markdown("---")
     st.markdown('<div class="section-divider">🎭 Genre & Ratings Depth</div>', unsafe_allow_html=True)
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown('<div class="section-header">Top 15 Genres</div>', unsafe_allow_html=True)
-        gd = eda.genre_distribution(df, top_n=15)
-        fig_genre = px.bar(gd, x="count", y="genre", orientation="h",
-            color="count", color_continuous_scale="Reds", template="plotly_dark",
-            title="Top 15 Genres by Title Count",
-            labels={"genre":"","count":"Titles"})
-        fig_genre.update_layout(**PL, yaxis=dict(autorange="reversed"))
-        fig_genre.update_coloraxes(showscale=False)
-        st.plotly_chart(fig_genre, use_container_width=True)
+    st.markdown('<div class="section-header">Top 15 Genres</div>', unsafe_allow_html=True)
+    gd = eda.genre_distribution(df, top_n=15)
+    fig_genre = px.bar(gd, x="count", y="genre", orientation="h",
+        color="count", color_continuous_scale="Reds", template="plotly_dark",
+        title="Top 15 Genres by Title Count",
+        labels={"genre":"","count":"Titles"})
+    fig_genre.update_layout(**PL, yaxis=dict(autorange="reversed"))
+    fig_genre.update_coloraxes(showscale=False)
+    st.plotly_chart(fig_genre, use_container_width=True)
 
-    with c2:
-        st.markdown('<div class="section-header">Ratings Distribution</div>', unsafe_allow_html=True)
-        rd = eda.rating_distribution(df)
-        fig_rat = px.bar(rd, x="rating", y="count",
-            color="count", color_continuous_scale="Oranges",
-            template="plotly_dark", title="Content Ratings Breakdown",
-            labels={"rating":"Rating","count":"Count"})
-        fig_rat.update_layout(**PL)
-        fig_rat.update_coloraxes(showscale=False)
-        st.plotly_chart(fig_rat, use_container_width=True)
-
-    # Genre co-occurrence heatmap
-    st.markdown('<div class="section-header">🔗 Genre Co-Occurrence Matrix</div>', unsafe_allow_html=True)
-    try:
-        co_matrix = eda.genre_cooccurrence_matrix(df, top_n=12)
-        if not co_matrix.empty:
-            fig_co = px.imshow(
-                co_matrix,
-                color_continuous_scale="Reds",
-                aspect="auto",
-                template="plotly_dark",
-                title="How Often Genre Pairs Appear Together (Darker = More Co-occurrence)",
-            )
-            fig_co.update_layout(**PL, height=480)
-            st.plotly_chart(fig_co, use_container_width=True)
-            st.markdown("""<div class="insight-box">
-            💡 <b>Insight:</b> Darker cells indicate genre pairs that frequently appear on the same title.
-            Strong co-occurrences reveal Netflix's genre bundling strategy 
-            (e.g. <i>International + Drama</i>, <i>Comedy + Romance</i>).
-            </div>""", unsafe_allow_html=True)
-    except Exception:
-        pass
-
-    # Country × Genre heatmap
-    st.markdown('<div class="section-header">🌍 Country × Genre Heatmap</div>', unsafe_allow_html=True)
-    try:
-        cg_matrix = eda.country_genre_heatmap(df, top_countries=12, top_genres=10)
-        if not cg_matrix.empty:
-            fig_cg = px.imshow(
-                cg_matrix,
-                color_continuous_scale="Inferno",
-                aspect="auto",
-                template="plotly_dark",
-                title="Genre Focus Per Country (Top 12 Countries × Top 10 Genres)",
-            )
-            fig_cg.update_layout(**PL, height=420)
-            st.plotly_chart(fig_cg, use_container_width=True)
-    except Exception:
-        pass
 
     # Top genres per year
     st.markdown('<div class="section-header">📊 Top 3 Genres Per Year</div>', unsafe_allow_html=True)
@@ -552,20 +449,6 @@ with tab1:
         fig_tgy.update_layout(**PL)
         st.plotly_chart(fig_tgy, use_container_width=True)
 
-    # Word frequency
-    st.markdown('<div class="section-header">🔤 Most Frequent Words in Descriptions</div>', unsafe_allow_html=True)
-    try:
-        words = eda.description_word_frequency(df, top_n=30)
-        fig_words = px.bar(words, x="count", y="word", orientation="h",
-            color="count", color_continuous_scale="Reds",
-            template="plotly_dark",
-            title="Top 30 Words in Netflix Title Descriptions",
-            labels={"word":"","count":"Frequency"})
-        fig_words.update_layout(**PL, height=520, yaxis=dict(autorange="reversed"))
-        fig_words.update_coloraxes(showscale=False)
-        st.plotly_chart(fig_words, use_container_width=True)
-    except Exception:
-        pass
 
 
     st.markdown("---")
@@ -599,30 +482,15 @@ with tab1:
     )
     st.plotly_chart(fig_map, use_container_width=True)
 
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown('<div class="section-header">Top 20 Countries</div>', unsafe_allow_html=True)
-        top20 = country_data.head(20)
-        fig_c = px.bar(top20, x="count", y="country", orientation="h",
-            color="count", color_continuous_scale="Reds", template="plotly_dark",
-            title="Top 20 Content-Producing Countries",
-            labels={"country":"","count":"Titles"})
-        fig_c.update_layout(**PL, yaxis=dict(autorange="reversed"))
-        fig_c.update_coloraxes(showscale=False)
-        st.plotly_chart(fig_c, use_container_width=True)
-
-    with c2:
-        st.markdown('<div class="section-header">Movies vs Shows – By Country</div>', unsafe_allow_html=True)
-        top10_countries = country_data.head(10)["country"].tolist()
-        df_top_c = df[df["primary_country"].isin(top10_countries)]
-        pivot_c = df_top_c.groupby(["primary_country","type"]).size().reset_index(name="count")
-        fig_cc = px.bar(pivot_c, x="primary_country", y="count", color="type",
-            barmode="group", template="plotly_dark",
-            color_discrete_sequence=["#e50914","#4bcffa"],
-            title="Movie vs TV Show Split – Top 10 Countries",
-            labels={"primary_country":"","count":"Titles","type":"Type"})
-        fig_cc.update_layout(**PL, xaxis_tickangle=-30)
-        st.plotly_chart(fig_cc, use_container_width=True)
+    st.markdown('<div class="section-header">Top 20 Countries</div>', unsafe_allow_html=True)
+    top20 = country_data.head(20)
+    fig_c = px.bar(top20, x="count", y="country", orientation="h",
+        color="count", color_continuous_scale="Reds", template="plotly_dark",
+        title="Top 20 Content-Producing Countries",
+        labels={"country":"","count":"Titles"})
+    fig_c.update_layout(**PL, yaxis=dict(autorange="reversed"))
+    fig_c.update_coloraxes(showscale=False)
+    st.plotly_chart(fig_c, use_container_width=True)
 
 
 
