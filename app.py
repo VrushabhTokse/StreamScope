@@ -389,26 +389,9 @@ st.markdown("<br>", unsafe_allow_html=True)
 # TAB 1 — Dashboard Insights (Growth, Genre, Global)
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    st.markdown('<div class="section-divider">🌍 Global & Strategic Footprint</div>', unsafe_allow_html=True)
-    
-    # 🌍 Global Data Prep
-    country_data = eda.country_content_counts(df)
-
-    # 1. Top 20 Countries
-    st.markdown('<div class="section-header">Top 20 Countries</div>', unsafe_allow_html=True)
-    top20 = country_data.head(20)
-    fig_c = px.bar(top20, x="count", y="country", orientation="h",
-        color="count", color_continuous_scale="Reds", template="plotly_dark",
-        title="Top 20 Content-Producing Countries",
-        labels={"country":"","count":"Titles"})
-    fig_c.update_layout(**PL, yaxis=dict(autorange="reversed"))
-    fig_c.update_coloraxes(showscale=False)
-    st.plotly_chart(fig_c, use_container_width=True)
-
-    st.markdown("---")
     st.markdown('<div class="section-divider">📈 Content Growth & Type Analysis</div>', unsafe_allow_html=True)
     
-    # 2. Growth + Type Split
+    # 1. Growth + Type Split
     c_a, c_b = st.columns([2, 1])
     with c_a:
         st.markdown('<div class="section-header">Netflix Content Growth Over Time</div>', unsafe_allow_html=True)
@@ -438,6 +421,23 @@ with tab1:
             fig_d.update_layout(title="Movies vs TV Shows",
                 showlegend=True, legend=dict(orientation="h",y=-0.1), **PL)
             st.plotly_chart(fig_d, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown('<div class="section-divider">🌍 Global & Strategic Footprint</div>', unsafe_allow_html=True)
+    
+    # Global Data Prep
+    country_data = eda.country_content_counts(df)
+
+    # 2. Top 20 Countries
+    st.markdown('<div class="section-header">Top 20 Countries</div>', unsafe_allow_html=True)
+    top20 = country_data.head(20)
+    fig_c = px.bar(top20, x="count", y="country", orientation="h",
+        color="count", color_continuous_scale="Reds", template="plotly_dark",
+        title="Top 20 Content-Producing Countries",
+        labels={"country":"","count":"Titles"})
+    fig_c.update_layout(**PL, yaxis=dict(autorange="reversed"))
+    fig_c.update_coloraxes(showscale=False)
+    st.plotly_chart(fig_c, use_container_width=True)
 
     st.markdown("---")
     st.markdown('<div class="section-divider">🗺️ Geography & Distribution</div>', unsafe_allow_html=True)
