@@ -389,9 +389,27 @@ st.markdown("<br>", unsafe_allow_html=True)
 # TAB 1 — Dashboard Insights (Growth, Genre, Global)
 # ══════════════════════════════════════════════════════════════════════════════
 with tab1:
-    st.markdown('<div class="section-divider">📈 Netflix Growth & Trends</div>', unsafe_allow_html=True)
-    c_a, c_b = st.columns([2, 1])
+    st.markdown('<div class="section-divider">🌍 Global & Strategic Footprint</div>', unsafe_allow_html=True)
+    
+    # 🌍 Global Data Prep
+    country_data = eda.country_content_counts(df)
 
+    # 1. Top 20 Countries
+    st.markdown('<div class="section-header">Top 20 Countries</div>', unsafe_allow_html=True)
+    top20 = country_data.head(20)
+    fig_c = px.bar(top20, x="count", y="country", orientation="h",
+        color="count", color_continuous_scale="Reds", template="plotly_dark",
+        title="Top 20 Content-Producing Countries",
+        labels={"country":"","count":"Titles"})
+    fig_c.update_layout(**PL, yaxis=dict(autorange="reversed"))
+    fig_c.update_coloraxes(showscale=False)
+    st.plotly_chart(fig_c, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown('<div class="section-divider">📈 Content Growth & Type Analysis</div>', unsafe_allow_html=True)
+    
+    # 2. Growth + Type Split
+    c_a, c_b = st.columns([2, 1])
     with c_a:
         st.markdown('<div class="section-header">Netflix Content Growth Over Time</div>', unsafe_allow_html=True)
         growth = eda.content_growth_over_time(df)
@@ -405,8 +423,6 @@ with tab1:
             fig_g.update_traces(line_width=2.5, opacity=0.85)
             fig_g.update_xaxes(showgrid=False)
             st.plotly_chart(fig_g, use_container_width=True)
-        else:
-            st.info("No data with current filters.")
 
     with c_b:
         st.markdown('<div class="section-header">Type Split</div>', unsafe_allow_html=True)
@@ -423,39 +439,11 @@ with tab1:
                 showlegend=True, legend=dict(orientation="h",y=-0.1), **PL)
             st.plotly_chart(fig_d, use_container_width=True)
 
-
-
     st.markdown("---")
-    st.markdown('<div class="section-divider">🎭 Genre & Ratings Depth</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-header">Top 15 Genres</div>', unsafe_allow_html=True)
-    gd = eda.genre_distribution(df, top_n=15)
-    fig_genre = px.bar(gd, x="count", y="genre", orientation="h",
-        color="count", color_continuous_scale="Reds", template="plotly_dark",
-        title="Top 15 Genres by Title Count",
-        labels={"genre":"","count":"Titles"})
-    fig_genre.update_layout(**PL, yaxis=dict(autorange="reversed"))
-    fig_genre.update_coloraxes(showscale=False)
-    st.plotly_chart(fig_genre, use_container_width=True)
+    st.markdown('<div class="section-divider">🗺️ Geography & Distribution</div>', unsafe_allow_html=True)
 
-
-    # Top genres per year
-    st.markdown('<div class="section-header">📊 Top 3 Genres Per Year</div>', unsafe_allow_html=True)
-    tgy = eda.top_genres_per_year(df, top_n=3)
-    if not tgy.empty:
-        fig_tgy = px.bar(tgy, x="year_added", y="count", color="genres_list",
-            barmode="stack", template="plotly_dark",
-            color_discrete_sequence=NC,
-            labels={"year_added":"Year","count":"Count","genres_list":"Genre"})
-        fig_tgy.update_layout(**PL)
-        st.plotly_chart(fig_tgy, use_container_width=True)
-
-
-
-    st.markdown("---")
-    st.markdown('<div class="section-divider">🌍 Global Footprint</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-header">🗺️ Global Content Distribution</div>', unsafe_allow_html=True)
-    country_data = eda.country_content_counts(df)
-
+    # 3. Global Content Distribution (Map)
+    st.markdown('<div class="section-header">Global Content Distribution</div>', unsafe_allow_html=True)
     fig_map = px.choropleth(
         country_data,
         locations="country", locationmode="country names",
@@ -482,15 +470,30 @@ with tab1:
     )
     st.plotly_chart(fig_map, use_container_width=True)
 
-    st.markdown('<div class="section-header">Top 20 Countries</div>', unsafe_allow_html=True)
-    top20 = country_data.head(20)
-    fig_c = px.bar(top20, x="count", y="country", orientation="h",
+    st.markdown("---")
+    st.markdown('<div class="section-divider">🎭 Genre & Category Trends</div>', unsafe_allow_html=True)
+
+    # 4. Top 3 Genres Per Year
+    st.markdown('<div class="section-header">Top 3 Genres Per Year</div>', unsafe_allow_html=True)
+    tgy = eda.top_genres_per_year(df, top_n=3)
+    if not tgy.empty:
+        fig_tgy = px.bar(tgy, x="year_added", y="count", color="genres_list",
+            barmode="stack", template="plotly_dark",
+            color_discrete_sequence=NC,
+            labels={"year_added":"Year","count":"Count","genres_list":"Genre"})
+        fig_tgy.update_layout(**PL)
+        st.plotly_chart(fig_tgy, use_container_width=True)
+
+    # 5. Top 15 Genres
+    st.markdown('<div class="section-header">Top 15 Genres</div>', unsafe_allow_html=True)
+    gd = eda.genre_distribution(df, top_n=15)
+    fig_genre = px.bar(gd, x="count", y="genre", orientation="h",
         color="count", color_continuous_scale="Reds", template="plotly_dark",
-        title="Top 20 Content-Producing Countries",
-        labels={"country":"","count":"Titles"})
-    fig_c.update_layout(**PL, yaxis=dict(autorange="reversed"))
-    fig_c.update_coloraxes(showscale=False)
-    st.plotly_chart(fig_c, use_container_width=True)
+        title="Top 15 Genres by Title Count",
+        labels={"genre":"","count":"Titles"})
+    fig_genre.update_layout(**PL, yaxis=dict(autorange="reversed"))
+    fig_genre.update_coloraxes(showscale=False)
+    st.plotly_chart(fig_genre, use_container_width=True)
 
 
 
