@@ -558,11 +558,10 @@ with tab2:
             
             p_gen = st.selectbox("Genre", sorted(df_full["primary_genre"].unique()))
             p_rat = st.selectbox("Rating", sorted(df_full["rating"].unique()), index=5)
-            p_yr  = st.slider("Year", int(df_full["release_year"].min()), int(df_full["release_year"].max()), 2021)
             p_len = st.radio("Length", ["Short", "Medium", "Long"], index=1, horizontal=True)
 
             if st.button("🚀 Run AI Prediction", use_container_width=True):
-                user_f = {"primary_genre":p_gen, "rating":p_rat, "release_year":p_yr, "content_length_category":p_len}
+                user_f = {"primary_genre":p_gen, "rating":p_rat, "release_year": 2021, "content_length_category":p_len}
                 res, conf, prob_dict = modeling.get_prediction(clf, encoders, class_names, user_f)
                 
                 clr = "#e50914" if res == "Movie" else "#4bcffa"
